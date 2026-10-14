@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Argon Trip Command Center | Malaysia Dec 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background-color: #f4f5f7;
+      color: #525f7f;
+    }
+    .argon-gradient {
+      background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%) !important;
+    }
+    .argon-card {
+      background: #ffffff;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 2rem 0 rgba(136, 152, 170, .15);
+      border: 0;
+    }
+    .argon-badge-primary { background-color: rgba(94, 114, 228, 0.15); color: #5e72e4; }
+    .argon-badge-success { background-color: rgba(45, 206, 137, 0.15); color: #2dce89; }
+    .argon-badge-warning { background-color: rgba(251, 99, 64, 0.15); color: #fb6340; }
+    .argon-badge-info { background-color: rgba(17, 205, 239, 0.15); color: #11cdef; }
+    .argon-btn-primary {
+      background-color: #5e72e4;
+      color: #fff;
+      box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
+      transition: all 0.15s ease;
+    }
+    .argon-btn-primary:hover {
+      background-color: #485fe0;
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body x-data="tripPlanner()" x-init="init()">
+
+  <!-- Argon Header Hero -->
+  <div class="argon-gradient pb-32 pt-8 px-4 sm:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+        <div>
+          <span class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-white/20 text-white">
+            Argon Travel OS • Dec 5–8, 2026
+          </span>
+          <h1 class="text-white text-3xl font-extrabold mt-2 tracking-tight">
+            Kuala Lumpur Family Expedition 🇲🇾
+          </h1>
+          <p class="text-indigo-100 text-sm mt-1">
+            Balaji, Dr. Preethi & Kimi Dhyanith • Masterfile: <strong>GHIN2026_295</strong> • AirAsia PNR: <strong>GHER2K</strong>
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button @click="resetProgress()" class="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded bg-white/10 text-white hover:bg-white/20 transition">
+            Reset Checklist
+          </button>
+          <button onclick="window.print()" class="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded bg-white text-indigo-600 shadow hover:bg-gray-50 transition">
+            Print / Save PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Argon Top Stat Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Card 1: Countdown / Status -->
+        <div class="argon-card p-5">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Readiness Score</p>
+              <h2 class="text-2xl font-extrabold text-slate-800 mt-1" x-text="progressPercentage() + '%'"></h2>
+            </div>
+            <div class="w-11 h-11 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold shadow">
+              ✓
+            </div>
+          </div>
+          <div class="w-full bg-gray-100 h-2 rounded-full mt-3 overflow-hidden">
+            <div class="bg-emerald-500 h-2 transition-all duration-300" :style="`width: ${progressPercentage()}%`"></div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">
+            <span class="font-bold text-emerald-600" x-text="completedCount()"></span> of <span x-text="totalCount()"></span> tasks completed
+          </p>
+        </div>
+
+        <!-- Card 2: Flights -->
+        <div class="argon-card p-5">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">AirAsia • GHER2K</p>
+              <h2 class="text-xl font-extrabold text-slate-800 mt-1">MAA ⇄ KUL (T2)</h2>
+            </div>
+            <div class="w-11 h-11 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold shadow">
+              ✈
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">
+            <strong class="text-slate-700">Out:</strong> Dec 5, 08:05 → 14:35 (AK 10)<br>
+            <strong class="text-slate-700">Ret:</strong> Dec 8, 21:45 → 23:05 (AK 13)
+          </p>
+        </div>
+
+        <!-- Card 3: Hotel & Transport -->
+        <div class="argon-card p-5">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Base Camp (3N4D)</p>
+              <h2 class="text-lg font-extrabold text-slate-800 mt-1">Metro Hotel Bukit</h2>
+            </div>
+            <div class="w-11 h-11 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold shadow">
+              🏨
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">
+            Conf: <strong class="text-slate-700">#261011-017</strong> (3 Breakfasts)<br>
+            Private AC Vehicle • Tamil/Eng Driver
+          </p>
+        </div>
+
+        <!-- Card 4: Payment Balance -->
+        <div class="argon-card p-5">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-xs font-bold uppercase text-gray-400 tracking-wider">Balance Due (Nov 21)</p>
+              <h2 class="text-2xl font-extrabold text-orange-500 mt-1">₹65,200</h2>
+            </div>
+            <div class="w-11 h-11 rounded-full bg-orange-400 text-white flex items-center justify-center font-bold shadow">
+              ₹
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">
+            Paid: <strong class="text-emerald-600">₹1,55,000</strong> / Total: ₹2,20,200<br>
+            + RM 30 Hotel Tax at check-in
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-8 -mt-20 pb-16">
+
+    <!-- Critical Baggage & Flight Alert Banner -->
+    <div class="argon-card p-4 mb-6 border-l-4 border-amber-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="flex items-start gap-3">
+        <span class="px-2.5 py-1 rounded text-xs font-bold uppercase argon-badge-warning mt-0.5">Baggage Alert</span>
+        <div class="text-sm text-slate-700">
+          <strong>Outbound (MAA → KUL, AK 10):</strong> Only <strong>7 kg Carry-on × 3</strong> is booked (No check-in bag). Keep liquids ≤100ml.<br>
+          <strong>Return (KUL → MAA, AK 13):</strong> Includes <strong>20 kg Checked Bag</strong> (under Balaji) + <strong>7 kg Carry-on × 3</strong>. Pack a foldable duffle inside your cabin bag for return shopping, or add outbound luggage on the AirAsia MOVE app!
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex flex-wrap gap-2 mb-6">
+      <button @click="activeTab = 'itinerary'" :class="activeTab === 'itinerary' ? 'argon-btn-primary' : 'bg-white text-slate-600 hover:bg-gray-50'" class="px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition">
+        🗓️ Timed Itinerary (Flight-Synced)
+      </button>
+      <button @click="activeTab = 'checklists'" :class="activeTab === 'checklists' ? 'argon-btn-primary' : 'bg-white text-slate-600 hover:bg-gray-50'" class="px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition">
+        ✅ Interactive Checklists
+      </button>
+      <button @click="activeTab = 'flights'" :class="activeTab === 'flights' ? 'argon-btn-primary' : 'bg-white text-slate-600 hover:bg-gray-50'" class="px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition">
+        ✈️ Flight & Voucher Vault
+      </button>
+      <button @click="activeTab = 'budget'" :class="activeTab === 'budget' ? 'argon-btn-primary' : 'bg-white text-slate-600 hover:bg-gray-50'" class="px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition">
+        💳 Expense & MYR Tracker
+      </button>
+    </div>
+
+    <!-- TAB 1: TIMED ITINERARY -->
+    <div x-show="activeTab === 'itinerary'" class="space-y-6">
+      <!-- Day Selector Pills -->
+      <div class="flex flex-wrap gap-2">
+        <template x-for="(day, index) in itinerary" :key="index">
+          <button @click="selectedDay = index"
+            :class="selectedDay === index ? 'bg-slate-800 text-white shadow' : 'bg-white text-slate-600 hover:bg-gray-100'"
+            class="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition">
+            <span x-text="day.shortTitle"></span>
+          </button>
+        </template>
+      </div>
+
+      <!-- Selected Day Card -->
+      <template x-for="(day, dIdx) in itinerary" :key="dIdx">
+        <div x-show="selectedDay === dIdx" class="argon-card overflow-hidden">
+          <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50/60">
+            <div>
+              <span class="px-3 py-1 rounded-full text-xs font-bold uppercase argon-badge-primary" x-text="day.date"></span>
+              <h3 class="text-xl font-extrabold text-slate-800 mt-2" x-text="day.title"></h3>
+              <p class="text-sm text-gray-500 mt-0.5" x-text="day.subtitle"></p>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-bold uppercase text-gray-400">Daily Progress</span>
+              <div class="text-lg font-extrabold text-indigo-600" x-text="dayDoneCount(dIdx) + ' / ' + day.events.length + ' Done'"></div>
+            </div>
+          </div>
+
+          <div class="divide-y divide-gray-100">
+            <template x-for="(ev, eIdx) in day.events" :key="eIdx">
+              <div class="p-5 hover:bg-gray-50/70 transition flex items-start gap-4">
+                <input type="checkbox" x-model="ev.done" @change="saveState()"
+                  class="mt-1.5 w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                <div class="flex-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700" x-text="ev.time"></span>
+                    <span class="px-2.5 py-0.5 rounded text-xs font-bold uppercase" :class="ev.badgeClass" x-text="ev.tag"></span>
+                    <h4 class="font-bold text-slate-800 text-base" :class="ev.done ? 'line-through text-gray-400' : ''" x-text="ev.activity"></h4>
+                  </div>
+                  <p class="text-sm text-gray-600 mt-1.5" x-text="ev.notes"></p>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- TAB 2: INTERACTIVE CHECKLISTS -->
+    <div x-show="activeTab === 'checklists'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <template x-for="(group, gIdx) in checklists" :key="gIdx">
+        <div class="argon-card overflow-hidden flex flex-col">
+          <div class="p-5 border-b border-gray-100 bg-slate-50/60 flex justify-between items-center">
+            <div>
+              <h3 class="font-extrabold text-slate-800 text-base" x-text="group.category"></h3>
+              <p class="text-xs text-gray-400" x-text="group.subtitle"></p>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold argon-badge-success"
+              x-text="group.items.filter(i => i.done).length + '/' + group.items.length"></span>
+          </div>
+
+          <div class="p-5 divide-y divide-gray-100 flex-1">
+            <template x-for="(item, iIdx) in group.items" :key="iIdx">
+              <label class="py-3 flex items-start gap-3 cursor-pointer select-none">
+                <input type="checkbox" x-model="item.done" @change="saveState()"
+                  class="mt-1 w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                <div class="flex-1">
+                  <div class="text-sm font-semibold text-slate-700" :class="item.done ? 'line-through text-gray-400' : ''" x-text="item.text"></div>
+                  <div x-show="item.hint" class="text-xs text-gray-400 mt-0.5" x-text="item.hint"></div>
+                </div>
+              </label>
+            </template>
+          </div>
+
+          <!-- Add Custom Task -->
+          <div class="p-4 bg-gray-50 border-t border-gray-100 flex gap-2">
+            <input type="text" x-model="group.newItemText" @keydown.enter="addChecklistItem(gIdx)"
+              placeholder="Add custom item..."
+              class="flex-1 text-xs px-3 py-2 rounded border border-gray-200 focus:outline-none focus:border-indigo-500">
+            <button @click="addChecklistItem(gIdx)" class="argon-btn-primary px-3 py-2 rounded text-xs font-bold">
+              + Add
+            </button>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- TAB 3: FLIGHT & VOUCHER VAULT -->
+    <div x-show="activeTab === 'flights'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Outbound Flight Card -->
+      <div class="argon-card p-6 border-t-4 border-indigo-500">
+        <div class="flex justify-between items-center mb-4">
+          <span class="px-3 py-1 rounded-full text-xs font-bold uppercase argon-badge-primary">Outbound • Sat, Dec 5, 2026</span>
+          <span class="text-xs font-bold text-slate-500">PNR: GHER2K • AirAsia AK 10</span>
+        </div>
+        <div class="flex items-center justify-between my-6">
+          <div>
+            <div class="text-3xl font-extrabold text-slate-800">08:05</div>
+            <div class="text-sm font-bold text-indigo-600">MAA (Terminal 2)</div>
+            <div class="text-xs text-gray-400">Chennai Intl (GMT+5:30)</div>
+          </div>
+          <div class="text-center px-4">
+            <div class="text-xs font-bold text-gray-400 uppercase">3h 50m • Non-Stop</div>
+            <div class="w-28 h-0.5 bg-indigo-200 my-2 relative"></div>
+            <div class="text-xs text-emerald-600 font-semibold">Economy Promo</div>
+          </div>
+          <div class="text-right">
+            <div class="text-3xl font-extrabold text-slate-800">14:35</div>
+            <div class="text-sm font-bold text-indigo-600">KUL (Terminal 2)</div>
+            <div class="text-xs text-gray-400">klia2 Sepang (GMT+8)</div>
+          </div>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
+          <strong>Baggage Allowance:</strong> 7 kg Carry-on per passenger (Balaji, Preethi, Dhyanith). <strong>0 kg Checked Baggage.</strong> Reach Chennai T2 by 05:05 AM.
+        </div>
+      </div>
+
+      <!-- Return Flight Card -->
+      <div class="argon-card p-6 border-t-4 border-emerald-500">
+        <div class="flex justify-between items-center mb-4">
+          <span class="px-3 py-1 rounded-full text-xs font-bold uppercase argon-badge-success">Return • Tue, Dec 8, 2026</span>
+          <span class="text-xs font-bold text-slate-500">PNR: GHER2K • AirAsia AK 13</span>
+        </div>
+        <div class="flex items-center justify-between my-6">
+          <div>
+            <div class="text-3xl font-extrabold text-slate-800">21:45</div>
+            <div class="text-sm font-bold text-emerald-600">KUL (Terminal 2)</div>
+            <div class="text-xs text-gray-400">klia2 Sepang (GMT+8)</div>
+          </div>
+          <div class="text-center px-4">
+            <div class="text-xs font-bold text-gray-400 uppercase">3h 50m • Non-Stop</div>
+            <div class="w-28 h-0.5 bg-emerald-200 my-2 relative"></div>
+            <div class="text-xs text-emerald-600 font-semibold">Economy</div>
+          </div>
+          <div class="text-right">
+            <div class="text-3xl font-extrabold text-slate-800">23:05</div>
+            <div class="text-sm font-bold text-emerald-600">MAA (Terminal 2)</div>
+            <div class="text-xs text-gray-400">Chennai Intl (GMT+5:30)</div>
+          </div>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-800">
+          <strong>Baggage Allowance:</strong> <strong>20 kg Checked Baggage</strong> (Balaji Lakshmipathi) + 7 kg Carry-on per passenger (×3). Putrajaya drop at klia2 by 18:45.
+        </div>
+      </div>
+
+      <!-- Land Package & Emergency Contacts -->
+      <div class="argon-card p-6 lg:col-span-2">
+        <h3 class="text-base font-extrabold text-slate-800 mb-4">📌 Gurukshethra Holidays & Hotel Reference Vault</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div class="p-4 rounded-lg bg-gray-50">
+            <div class="font-bold text-slate-700 uppercase mb-1">Hotel Details</div>
+            <p class="text-slate-800 font-bold text-sm">Metro Hotel Bukit Bintang</p>
+            <p class="text-gray-500 mt-1">Confirmation No: <strong>261011-017</strong></p>
+            <p class="text-gray-500">Check-in: 2:00 PM | Check-out: 12:00 Noon</p>
+            <p class="text-gray-500">Meals: 03 Breakfasts Included</p>
+          </div>
+          <div class="p-4 rounded-lg bg-gray-50">
+            <div class="font-bold text-slate-700 uppercase mb-1">Tour Operator</div>
+            <p class="text-slate-800 font-bold text-sm">Gurukshethra Holidays Pvt Ltd</p>
+            <p class="text-gray-500 mt-1">Masterfile: <strong>GHIN2026_295</strong></p>
+            <p class="text-gray-500">Mob: 9943023230, 9500023230</p>
+            <p class="text-gray-500">Email: info@gurukshethraholidays.com</p>
+          </div>
+          <div class="p-4 rounded-lg bg-gray-50">
+            <div class="font-bold text-slate-700 uppercase mb-1">Driver & Local Notes</div>
+            <textarea x-model="customNotes" @input="saveState()" rows="4"
+              placeholder="Paste Driver Name, Vehicle Plate, & WhatsApp number here once received..."
+              class="w-full mt-1 p-2 rounded border border-gray-200 bg-white text-slate-700 focus:outline-none focus:border-indigo-500"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: EXPENSE & MYR TRACKER -->
+    <div x-show="activeTab === 'budget'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Fixed Package Breakdown -->
+      <div class="argon-card p-6">
+        <h3 class="text-base font-extrabold text-slate-800 mb-4">🇮🇳 Package Payment Ledger</h3>
+        <div class="space-y-3 text-sm">
+          <div class="flex justify-between py-2 border-b border-gray-100">
+            <span class="text-gray-500">Land Package (3N4D)</span>
+            <span class="font-bold text-slate-800">₹1,00,500</span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-gray-100">
+            <span class="text-gray-500">Flights + 20kg Return Bag</span>
+            <span class="font-bold text-slate-800">₹1,19,700</span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-gray-100">
+            <span class="text-gray-500">Total Package Cost</span>
+            <span class="font-extrabold text-indigo-600">₹2,20,200</span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-gray-100">
+            <span class="text-emerald-600 font-semibold">Advance Paid</span>
+            <span class="font-bold text-emerald-600">- ₹1,55,000</span>
+          </div>
+          <div class="flex justify-between py-2 bg-orange-50 px-3 rounded-lg">
+            <span class="text-orange-700 font-bold">Balance Due (Nov 21)</span>
+            <span class="font-extrabold text-orange-600">₹65,200</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- On-Ground MYR Expense Calculator -->
+      <div class="argon-card p-6 lg:col-span-2">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <h3 class="text-base font-extrabold text-slate-800">🇲🇾 On-Ground Ringgit (MYR) Tracker</h3>
+            <p class="text-xs text-gray-400">Track cash/forex spend in Malaysia (1 MYR ≈ ₹19.50)</p>
+          </div>
+          <div class="text-right">
+            <span class="text-xs font-bold uppercase text-gray-400">Estimated MYR Total</span>
+            <div class="text-xl font-extrabold text-indigo-600">
+              RM <span x-text="totalMYR()"></span>
+              <span class="text-xs font-normal text-gray-500">(≈ ₹<span x-text="(totalMYR() * 19.5).toFixed(0)"></span>)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2 mb-4 max-h-64 overflow-y-auto pr-1">
+          <template x-for="(exp, idx) in expenses" :key="idx">
+            <div class="flex items-center justify-between p-3 rounded bg-gray-50 text-xs">
+              <div class="font-semibold text-slate-700" x-text="exp.title"></div>
+              <div class="flex items-center gap-3">
+                <span class="font-bold text-slate-800">RM <span x-text="exp.amount"></span></span>
+                <button @click="removeExpense(idx)" class="text-rose-500 hover:text-rose-700 font-bold">✕</button>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class="flex flex-wrap gap-2 pt-3 border-t border-gray-100">
+          <input type="text" x-model="newExpTitle" placeholder="Expense item (e.g., Jalan Alor Dinner)"
+            class="flex-1 text-xs px-3 py-2 rounded border border-gray-200 focus:outline-none focus:border-indigo-500">
+          <input type="number" x-model="newExpAmount" placeholder="RM Amount"
+            class="w-28 text-xs px-3 py-2 rounded border border-gray-200 focus:outline-none focus:border-indigo-500">
+          <button @click="addExpense()" class="argon-btn-primary px-4 py-2 rounded text-xs font-bold">
+            + Log RM
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function tripPlanner() {
+      const defaultData = {
+        activeTab: 'itinerary',
+        selectedDay: 0,
+        customNotes: '',
+        newExpTitle: '',
+        newExpAmount: '',
+        expenses: [
+          { title: 'Mandatory Hotel Tourism Tax (RM 10 × 3 Nights)', amount: 30 },
+          { title: 'Awana SkyWay Cable Car Luggage Storage (Optional)', amount: 15 },
+          { title: 'Lunches & Dinners Buffer (4 Days Family of 3)', amount: 600 },
+          { title: 'Petaling Street / Souvenirs Buffer', amount: 250 }
+        ],
+        itinerary: [
+          {
+            shortTitle: 'Day 1 • Dec 5 (Sat)',
+            date: 'Saturday, Dec 5, 2026',
+            title: 'Arrival at klia2, Check-In & KLCC Evening Lights',
+            subtitle: 'AirAsia AK 10 lands at 14:35 • 4-Hour Evening Tour',
+            events: [
+              { time: '05:05 IST', tag: 'Airport', badgeClass: 'argon-badge-info', activity: 'Reach Chennai Airport (MAA) Terminal 2', notes: 'Flight AK 10 departs 08:05. Cabin baggage only (7 kg × 3). Keep all liquids/gels under 100ml.', done: false },
+              { time: '14:35 MYT', tag: 'Arrival', badgeClass: 'argon-badge-success', activity: 'Land at KLIA Terminal 2 (klia2) & Clear Immigration', notes: 'Note critical rule: Driver waits 60–90 mins after landing (until ~16:00). Clear MDAC E-gate/immigration first before buying snacks.', done: false },
+              { time: '15:45 MYT', tag: 'Transfer', badgeClass: 'argon-badge-primary', activity: 'Meet Private Driver & Transfer to Bukit Bintang', notes: '1-hour drive from Sepang (klia2) to Metro Hotel Bukit Bintang.', done: false },
+              { time: '16:45 MYT', tag: 'Hotel', badgeClass: 'argon-badge-warning', activity: 'Check-In at Metro Hotel Bukit Bintang (#261011-017)', notes: 'Pay RM 30 Tourism Tax in cash + refundable security deposit. Freshen up quickly.', done: false },
+              { time: '17:45 MYT', tag: 'Sightseeing', badgeClass: 'argon-badge-primary', activity: 'Petronas Twin Towers Observation Deck & Skybridge', notes: 'Ideal slot: 18:00–18:30 to catch golden hour and KL night skyline.', done: false },
+              { time: '19:45 MYT', tag: 'Sightseeing', badgeClass: 'argon-badge-success', activity: 'KLCC Park & Lake Symphony Musical Fountain Show', notes: 'Catch the 20:00 (8 PM) synchronized light & water show right outside Suria KLCC.', done: false },
+              { time: '20:30 MYT', tag: 'Shopping', badgeClass: 'argon-badge-info', activity: 'Pavilion Mall Christmas Display & Dinner', notes: 'Walk via elevated KLCC-Bukit Bintang walkway. See the grand Christmas courtyard with Kimi & grab dinner.', done: false }
+            ]
+          },
+          {
+            shortTitle: 'Day 2 • Dec 6 (Sun)',
+            date: 'Sunday, Dec 6, 2026',
+            title: 'Batu Caves, Heritage City Tour, Thean Hou & Chinatown',
+            subtitle: '8-Hour Full City Exploration',
+            events: [
+              { time: '07:30 MYT', tag: 'Meal', badgeClass: 'argon-badge-success', activity: 'Breakfast at Metro Hotel (My Kitchen)', notes: 'Fuel up early before the Sunday crowd builds up.', done: false },
+              { time: '08:30 MYT', tag: 'Culture', badgeClass: 'argon-badge-warning', activity: 'Batu Caves & 272 Rainbow Steps', notes: 'Beat the midday heat. Ensure knees and shoulders are covered. Watch out for cheeky macaques!', done: false },
+              { time: '11:00 MYT', tag: 'City Tour', badgeClass: 'argon-badge-primary', activity: 'KL Heritage Drive (King\'s Palace & Merdeka Square)', notes: 'Photo stops at Istana Negara, Dataran Merdeka & Sultan Abdul Samad Building.', done: false },
+              { time: '13:00 MYT', tag: 'Temple', badgeClass: 'argon-badge-info', activity: 'Thean Hou Temple (Robson Heights)', notes: 'Explore the 6-tiered hilltop temple with panoramic views of KL skyscrapers.', done: false },
+              { time: '15:00 MYT', tag: 'Market', badgeClass: 'argon-badge-warning', activity: 'Chinatown, Petaling Street & Central Market', notes: 'Bargain souvenir shopping, street snacks, and return to hotel by 17:30.', done: false }
+            ]
+          },
+          {
+            shortTitle: 'Day 3 • Dec 7 (Mon)',
+            date: 'Monday, Dec 7, 2026',
+            title: 'Genting Highlands, Awana SkyWay & Skytropolis',
+            subtitle: 'Full-Day Mountain Resort & Indoor Theme Park',
+            events: [
+              { time: '08:00 MYT', tag: 'Meal', badgeClass: 'argon-badge-success', activity: 'Breakfast at Hotel & Pack Light Jackets', notes: 'Genting sits at 1,800m and gets chilly/misty in December.', done: false },
+              { time: '09:00 MYT', tag: 'Transfer', badgeClass: 'argon-badge-primary', activity: 'Drive to Awana SkyCentral Station (~1 Hour)', notes: 'Private AC vehicle drop at the cable car base.', done: false },
+              { time: '10:15 MYT', tag: 'Cable Car', badgeClass: 'argon-badge-info', activity: 'Awana SkyWay Gondola + Chin Swee Caves Temple Stop', notes: 'Hop off midway at Chin Swee station for 30 mins (free stop) before riding up to SkyAvenue.', done: false },
+              { time: '11:30 MYT', tag: 'Theme Park', badgeClass: 'argon-badge-warning', activity: 'Skytropolis Indoor Theme Park (Tickets Included)', notes: 'Over 20 indoor rides for Kimi and family inside the climate-controlled dome.', done: false },
+              { time: '18:00 MYT', tag: 'Return', badgeClass: 'argon-badge-primary', activity: 'Descend via Cable Car & Drive back to Bukit Bintang', notes: 'Relaxed evening near Bukit Bintang / Berjaya Times Square.', done: false }
+            ]
+          },
+          {
+            shortTitle: 'Day 4 • Dec 8 (Tue)',
+            date: 'Tuesday, Dec 8, 2026',
+            title: 'Aquaria KLCC, Bird Park, Putrajaya & Night Flight Home',
+            subtitle: 'AirAsia AK 13 departs at 21:45 • Zero Rush Full Sightseeing Day!',
+            events: [
+              { time: '08:00 MYT', tag: 'Check-Out', badgeClass: 'argon-badge-warning', activity: 'Breakfast, Pack 20kg Check-In Bag & Check-Out', notes: 'Collect refundable hotel deposit! Load all bags into your private vehicle by 09:15.', done: false },
+              { time: '09:45 MYT', tag: 'Wildlife', badgeClass: 'argon-badge-info', activity: 'Aquaria KLCC Underwater Tunnel (Tickets Included)', notes: 'Spend ~1.5 to 2 hours exploring the 90m shark & stingray tunnel.', done: false },
+              { time: '12:15 MYT', tag: 'Wildlife', badgeClass: 'argon-badge-success', activity: 'KL Bird Park (World\'s Largest Free-Flight Aviary)', notes: 'Walk amongst hornbills, flamingos & peacocks (~2 hours). Grab lunch nearby.', done: false },
+              { time: '15:15 MYT', tag: 'Sightseeing', badgeClass: 'argon-badge-primary', activity: 'Putrajaya Tour (3 Hours En Route to Airport)', notes: 'Visit Putra Mosque (Pink Mosque), Perdana Putra & Seri Wawasan Bridge.', done: false },
+              { time: '18:30 MYT', tag: 'Airport', badgeClass: 'argon-badge-warning', activity: 'Drop at KLIA Terminal 2 (klia2) for AK 13', notes: 'Drop your 20kg checked bag under Balaji\'s name. Flight departs 21:45, lands in Chennai at 23:05 IST.', done: false }
+            ]
+          }
+        ],
+        checklists: [
+          {
+            category: '1. Pre-Trip Deadlines & Paperwork',
+            subtitle: 'Critical milestones before Dec 5',
+            newItemText: '',
+            items: [
+              { text: 'Pay Balance ₹65,200 to Gurukshethra Holidays', hint: 'Due Date: Nov 21, 2026', done: false },
+              { text: 'Collect Final Service Vouchers & Entry Tickets', hint: 'Ensure Twin Towers slot, Aquaria, Bird Park & Skytropolis QR tickets are sent', done: false },
+              { text: 'Submit MDAC (Malaysia Digital Arrival Card) × 3', hint: 'Complete online between Dec 2 and Dec 4 (imigresen-online.imi.gov.my/mdac/main)', done: false },
+              { text: 'Web Check-In on AirAsia MOVE App (PNR: GHER2K)', hint: 'Opens 14 days before flight; download boarding passes', done: false },
+              { text: 'Decide on Outbound Baggage (MAA → KUL)', hint: 'Either pack inside 3×7kg cabin bags OR add 20kg outbound bag in AirAsia app', done: false },
+              { text: 'Get Driver WhatsApp Number & Vehicle Plate', hint: 'Request from Gurukshethra on Dec 4', done: false }
+            ]
+          },
+          {
+            category: '2. Cabin-Smart Packing & Clothing',
+            subtitle: 'Tailored for AirAsia 7kg rule & KL weather',
+            newItemText: '',
+            items: [
+              { text: 'Pack 1 Foldable Duffle Bag inside Cabin Luggage', hint: 'Use this as your 20kg checked bag on the Dec 8 return flight!', done: false },
+              { text: 'All Liquids/Gels/Pastes in ≤100ml Bottles', hint: 'Mandatory for MAA security since outbound is cabin-only', done: false },
+              { text: '3 Light Jackets / Hoodies (For Genting Highlands)', hint: 'Genting is ~15–18°C and misty in December', done: false },
+              { text: 'Modest Wear for Batu Caves & Putra Mosque', hint: 'Shoulders and knees covered for adults', done: false },
+              { text: '2 Compact Umbrellas / Rain Ponchos', hint: 'December brings sudden tropical afternoon showers in KL', done: false },
+              { text: 'Comfortable Walking Shoes for Family', hint: 'Essential for 272 steps at Batu Caves, Bird Park & Pavilion walkway', done: false }
+            ]
+          },
+          {
+            category: '3. Tech, Power & Cash Essentials',
+            subtitle: 'Malaysia uses Type G (3-pin rectangular UK plug)',
+            newItemText: '',
+            items: [
+              { text: 'Type G (UK 3-Pin) Universal Plug Adapters × 2', hint: 'Malaysia sockets are 240V UK-style flat 3-pin', done: false },
+              { text: 'Power Bank (≤100Wh, max 2 per person in Cabin Only)', hint: 'Never pack power banks inside the return checked bag!', done: false },
+              { text: 'Carry RM 250–300 Physical Cash at Airport', hint: 'RM 30 Tourism Tax + RM 100–200 refundable hotel deposit + street stalls', done: false },
+              { text: 'Enable International Roaming / eSIM + Zero-Forex Card', hint: 'Grab & malls take cards; Petaling Street prefers cash', done: false }
+            ]
+          },
+          {
+            category: '4. Kimi\'s Kid Kit & Family Meds',
+            subtitle: 'Smooth transit for a 7-year-old',
+            newItemText: '',
+            items: [
+              { text: 'Passports (Original + Printed Copies × 3)', hint: 'Check 6+ months validity', done: false },
+              { text: 'Basic Kid Meds (Paracetamol, Motion Sickness, Band-Aids)', hint: 'Keep in small travel pouch for Genting winding mountain drive', done: false },
+              { text: 'Dry Snacks / Biscuits for Flight & Sightseeing', hint: 'AirAsia Promo fare does not include complimentary meals', done: false },
+              { text: 'Empty Reusable Water Bottles × 3', hint: 'Refill after clearing security at MAA T2 and klia2', done: false }
+            ]
+          }
+        ]
+      };
+
+      return {
+        ...defaultData,
+        init() {
+          const saved = localStorage.getItem('argon_malaysia_2026_v1');
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved);
+              this.itinerary = parsed.itinerary || defaultData.itinerary;
+              this.checklists = parsed.checklists || defaultData.checklists;
+              this.expenses = parsed.expenses || defaultData.expenses;
+              this.customNotes = parsed.customNotes || '';
+            } catch (e) {
+              console.error('Could not parse saved trip data', e);
+            }
+          }
+        },
+        saveState() {
+          localStorage.setItem('argon_malaysia_2026_v1', JSON.stringify({
+            itinerary: this.itinerary,
+            checklists: this.checklists,
+            expenses: this.expenses,
+            customNotes: this.customNotes
+          }));
+        },
+        completedCount() {
+          let c = 0;
+          this.itinerary.forEach(d => d.events.forEach(e => { if (e.done) c++; }));
+          this.checklists.forEach(g => g.items.forEach(i => { if (i.done) c++; }));
+          return c;
+        },
+        totalCount() {
+          let t = 0;
+          this.itinerary.forEach(d => t += d.events.length);
+          this.checklists.forEach(g => t += g.items.length);
+          return t;
+        },
+        progressPercentage() {
+          const total = this.totalCount();
+          return total === 0 ? 0 : Math.round((this.completedCount() / total) * 100);
+        },
+        dayDoneCount(dIdx) {
+          return this.itinerary[dIdx].events.filter(e => e.done).length;
+        },
+        addChecklistItem(gIdx) {
+          const txt = this.checklists[gIdx].newItemText.trim();
+          if (!txt) return;
+          this.checklists[gIdx].items.push({ text: txt, hint: 'Custom item', done: false });
+          this.checklists[gIdx].newItemText = '';
+          this.saveState();
+        },
+        totalMYR() {
+          return this.expenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+        },
+        addExpense() {
+          if (!this.newExpTitle.trim() || !this.newExpAmount) return;
+          this.expenses.push({ title: this.newExpTitle.trim(), amount: Number(this.newExpAmount) });
+          this.newExpTitle = '';
+          this.newExpAmount = '';
+          this.saveState();
+        },
+        removeExpense(idx) {
+          this.expenses.splice(idx, 1);
+          this.saveState();
+        },
+        resetProgress() {
+          if (confirm('Reset all checkboxes and custom notes back to default?')) {
+            localStorage.removeItem('argon_malaysia_2026_v1');
+            location.reload();
+          }
+        }
+      };
+    }
+  </script>
+</body>
+</html>
